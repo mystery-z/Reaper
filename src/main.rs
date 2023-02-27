@@ -47,12 +47,12 @@ fn main() -> Result<(), anyhow::Error> {
     }
 
     for file in &args.files {
-        logging();
+        
         if !Path::new(&file).exists() {
             println!("reap: Cannot remove {:?}: no such file or directory", file);
             continue;
         }
-       
+        logging();
         let absolute_path = fs::canonicalize(file).unwrap();
 
         let mut grave = PathBuf::from("/tmp/grave");
