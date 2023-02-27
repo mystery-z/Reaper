@@ -52,7 +52,7 @@ fn main() -> Result<(), anyhow::Error> {
             println!("reap: Cannot remove {:?}: no such file or directory", file);
             continue;
         }
-        logging();
+       // logging();
         let absolute_path = fs::canonicalize(file).unwrap();
 
         let mut grave = PathBuf::from("/tmp/grave");
@@ -70,7 +70,9 @@ fn main() -> Result<(), anyhow::Error> {
                 _err
             )
         };
+        logging();
     }
+
 
     Ok(())
 }
