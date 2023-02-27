@@ -3,16 +3,20 @@
 
 mod args;
 
+use anyhow::{bail, Result};
 use clap::Parser;
 use std::path::Path;
 
 use args::Args;
 
-
-fn main() {
+fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
 
-    for file in args.file_name {
-        println!("Debug: {}", Path::new(&file).exists())
+    for file in args.files {
+        if !Path::new(&file).exists() {
+            bail!("Cannot remove '{}': no such file or directory", file.to_str().unwrap());
+        }
     }
+
+    Ok(())
 }

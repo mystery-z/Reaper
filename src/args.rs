@@ -6,5 +6,5 @@ use std::path::PathBuf;
 pub struct Args {
     /// Enter file name to delete
     #[arg(value_name = "FILE", value_delimiter = ' ')]
-    pub file_name: Vec<PathBuf>,
+    pub files: Vec<PathBuf>,
 }
