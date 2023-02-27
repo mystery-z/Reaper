@@ -1,30 +1,19 @@
+#![allow(non_snake_case)]
+#![allow(unused_variables)]
+
 use clap::Parser;
+use std::path::PathBuf;
 
-/// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(name = "reap", author, version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
-    #[arg(short, long)]
-    name: String,
-
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
-} 
-
-#[derive(Parser)]
-struct Cli {
-    /// The pattern to look for
-    pattern: String,
-    /// The path to the file to read
-    path: std::path::PathBuf,
+    /// Enter file name to delete
+    #[arg(short, long, value_name = "FILE")]
+    file_name: Option<PathBuf>,
 }
 
 fn main() {
     let args = Args::parse();
 
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name)
-    }
+    println!("Debug: {}", args.file_name.unwrap().into_os_string().into_string().unwrap())
 }
