@@ -12,6 +12,9 @@ use std::path::{Path, PathBuf};
 
 use args::Args;
 
+// TODO: Make a check to see if file with same name already exists. Do the same for when undo
+// command is run.
+
 fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
 
@@ -33,12 +36,16 @@ fn main() -> Result<(), anyhow::Error> {
         grave = grave.join(&absolute_path.strip_prefix("/").unwrap());
 
         if let Err(_err) = fs::create_dir_all(&grave.parent().unwrap()) {
-            bail!("Failed to create directory {}: {}", &grave.display(), _err);
+            bail!(
+                "reap: Failed to create directory {}: {}",
+                &grave.display(),
+                _err
+            );
         }
 
         if let Err(_err) = fs::rename(&absolute_path, &grave) {
             bail!(
-                "Failed to move file from {} to {}: {}",
+                "reap: Failed to move file from {} to {}: {}",
                 &absolute_path.display(),
                 &grave.display(),
                 _err
