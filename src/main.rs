@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 #![allow(unused_imports)]
+#![allow(unused_must_use)]
 #![allow(unused_variables)]
 
 mod args;
@@ -11,31 +12,70 @@ use std::io::Error;
 use std::path::{Path, PathBuf};
 
 use args::Args;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::Write;
-use std::fs::OpenOptions;
-
 
 //right now, the problem with the logging function is that it just gets the file name, but it should get the path of the file as well, this can be fixed later when we add the actual del func
-fn logging(){ 
-    let args = Args::parse();   
-    
-    //println!("{:?}", args); //for debugging only
-    if !Path::new("reaper_log.log").exists(){
-        let log_file = File::create("reaper_log.log"); 
+fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Error> {
+    if !Path::new("/tmp/grave/.log").exists() {
+        if let Err(_err) = fs::File::create("/tmp/grave/.log") {
+            bail!("reap: Failed to create grave directory: {}", _err);
+        }
     }
- 
-    //let log_file= File::open("reaper_log.log");
-    let mut log_file = OpenOptions::new().write(false).append(true).create(false).open("reaper_log.log").expect("Unable to open/create file"); //create the reaper_log.log file
-    let result_to_log = args.files[0].as_path().display().to_string();
-    let newline = "";
-    let result = [result_to_log, newline.to_string()].join("\n");
-    //println!("{:}", result); //for debugging only
-    //gets the file name, then file_name --> path --> string --> bytes and writes to .log
-    log_file.write_all(result.as_bytes()).expect("Unable to write data");
+
+    let mut log_file = OpenOptions::new()
+        .write(false)
+        .append(true)
+        .create(false)
+        .open("/tmp/grave/.log")
+        .expect("Unable to open file");
+
+    let mut log_data = String::from(grave_path.display().to_string()) + " ";
+    log_data = log_data + &String::from(original_path.display().to_string()) + "\n";
+
+    log_file
+        .write_all(log_data.as_bytes())
+        .expect("reap: Unable to write data to log");
+
+    Ok(())
 }
 
+// TODO: Make a check to see if file with same name already exists. Do the same for when undo
+// command is run.
 
+fn delete_files(files: &Vec<PathBuf>) -> Result<(), anyhow::Error> {
+    for file in files {
+        if !Path::new(&file).exists() {
+            println!("reap: Cannot remove {:?}: no such file or directory", file);
+            continue;
+        }
+        let absolute_path = fs::canonicalize(file).unwrap();
+
+        let mut grave = PathBuf::from("/tmp/grave");
+        grave = grave.join(&absolute_path.strip_prefix("/").unwrap());
+
+        if let Err(_err) = fs::create_dir_all(&grave.parent().unwrap()) {
+            bail!(
+                "reap: Failed to create directory {}: {}",
+                &grave.display(),
+                _err
+            );
+        }
+
+        if let Err(_err) = fs::rename(&absolute_path, &grave) {
+            bail!(
+                "reap: Failed to move file from {} to {}: {}",
+                &absolute_path.display(),
+                &grave.display(),
+                _err
+            )
+        };
+
+        logging(grave, absolute_path);
+    }
+
+    Ok(())
+}
 
 fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
@@ -46,33 +86,7 @@ fn main() -> Result<(), anyhow::Error> {
         }
     }
 
-    for file in &args.files {
-        
-        if !Path::new(&file).exists() {
-            println!("reap: Cannot remove {:?}: no such file or directory", file);
-            continue;
-        }
-       // logging();
-        let absolute_path = fs::canonicalize(file).unwrap();
-
-        let mut grave = PathBuf::from("/tmp/grave");
-        grave = grave.join(&absolute_path.strip_prefix("/").unwrap());
-
-        if let Err(_err) = fs::create_dir_all(&grave.parent().unwrap()) {
-            bail!("Failed to create directory {}: {}", &grave.display(), _err);
-        }
-
-        if let Err(_err) = fs::rename(&absolute_path, &grave) {
-            bail!(
-                "Failed to move file from {} to {}: {}",
-                &absolute_path.display(),
-                &grave.display(),
-                _err
-            )
-        };
-        logging();
-    }
-
+    delete_files(&args.files);
 
     Ok(())
 }
