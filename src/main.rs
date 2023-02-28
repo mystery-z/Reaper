@@ -15,7 +15,6 @@ use args::Args;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
-//right now, the problem with the logging function is that it just gets the file name, but it should get the path of the file as well, this can be fixed later when we add the actual del func
 fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Error> {
     if !Path::new("/tmp/grave/.log").exists() {
         if let Err(_err) = fs::File::create("/tmp/grave/.log") {
@@ -28,10 +27,12 @@ fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Er
         .append(true)
         .create(false)
         .open("/tmp/grave/.log")
-        .expect("Unable to open file");
+        .expect("Unable to open log file");
 
-    let mut log_data = String::from(grave_path.display().to_string()) + " ";
-    log_data = log_data + &String::from(original_path.display().to_string()) + "\n";
+    let log_data = String::from(grave_path.display().to_string())
+        + " "
+        + &String::from(original_path.display().to_string())
+        + "\n";
 
     log_file
         .write_all(log_data.as_bytes())
@@ -39,6 +40,8 @@ fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Er
 
     Ok(())
 }
+
+fn undo() {}
 
 // TODO: Make a check to see if file with same name already exists. Do the same for when undo
 // command is run.
