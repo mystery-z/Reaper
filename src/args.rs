@@ -7,6 +7,10 @@ pub struct Args {
     /// Enter file name to delete
     #[arg(value_name = "FILE", value_delimiter = ' ')]
     pub files: Vec<PathBuf>,
-
     
+    /// Enter the file to undo
+    #[arg(short='u', value_name = "FILE", value_delimiter = ' ')]
+    pub undo_file: Vec<PathBuf>
+    
+
 }
