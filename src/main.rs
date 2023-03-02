@@ -19,7 +19,7 @@ use std::io::Write;
 fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Error> {
     if !Path::new("/tmp/grave/.log").exists() {
         if let Err(_err) = fs::File::create("/tmp/grave/.log") {
-            bail!("reap: Failed to create grave directory: {}", _err);
+            bail!("RmX: Failed to create grave directory: {}", _err);
         }
     }
 
@@ -37,12 +37,13 @@ fn logging(grave_path: PathBuf, original_path: PathBuf) -> Result<(), anyhow::Er
 
     log_file
         .write_all(log_data.as_bytes())
-        .expect("reap: Unable to write data to log");
+        .expect("RmX: Unable to write data to log");
 
     Ok(())
 }
 
-fn undo() {}
+fn undo(){}
+
 
 // TODO: Make a check to see if file with same name already exists. Do the same for when undo
 // command is run.
@@ -50,7 +51,7 @@ fn undo() {}
 fn delete_files(files: &Vec<PathBuf>, UNIX_TIME: &u64) -> Result<(), anyhow::Error> {
     for file in files {
         if !Path::new(&file).exists() {
-            println!("reap: Cannot remove {:?}: no such file or directory", file);
+            println!("RmX: Cannot remove {:?}: no such file or directory", file);
             continue;
         }
 
@@ -78,7 +79,7 @@ fn delete_files(files: &Vec<PathBuf>, UNIX_TIME: &u64) -> Result<(), anyhow::Err
 
         if let Err(_err) = fs::create_dir_all(&grave.parent().unwrap()) {
             bail!(
-                "reap: Failed to create directory {}: {}",
+                "RmX: Failed to create directory {}: {}",
                 &grave.display(),
                 _err
             );
@@ -86,7 +87,7 @@ fn delete_files(files: &Vec<PathBuf>, UNIX_TIME: &u64) -> Result<(), anyhow::Err
 
         if let Err(_err) = fs::rename(&absolute_path, &grave) {
             bail!(
-                "reap: Failed to move file from {} to {}: {}",
+                "RmX: Failed to move file from {} to {}: {}",
                 &absolute_path.display(),
                 &grave.display(),
                 _err
@@ -111,7 +112,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     if !Path::new("/tmp/grave").exists() {
         if let Err(_err) = fs::create_dir("/tmp/grave") {
-            bail!("reap: Failed to create grave directory: {}", _err)
+            bail!("RmX: Failed to create grave directory: {}", _err)
         }
     }
 
