@@ -59,13 +59,22 @@ fn delete_files(files: &Vec<PathBuf>, UNIX_TIME: &u64) -> Result<(), anyhow::Err
         let mut grave = PathBuf::from("/tmp/grave");
         grave = grave.join(&absolute_path.strip_prefix("/").unwrap());
 
-        let grave_extention = grave.extension().unwrap().to_str().unwrap();
-        let grave_stem = grave.file_stem().unwrap().to_str().unwrap();
 
-        let mut grave_path = format!("{}-{}", grave_stem, UNIX_TIME);
-        grave_path = format!("{}.{}", grave_path, grave_extention);
+        if let Some(extention) = grave.extension() {
+            let grave_extention = grave.extension().unwrap().to_str().unwrap();
+            let grave_stem = grave.file_stem().unwrap().to_str().unwrap();
 
-        grave.set_file_name(grave_path);
+            let mut grave_path = format!("{}-{}", grave_stem, UNIX_TIME);
+            grave_path = format!("{}.{}", grave_path, grave_extention);
+
+            grave.set_file_name(grave_path);
+        } 
+        else {
+            grave.set_file_name(format!("{}-{}", grave.file_stem().unwrap().to_str().unwrap(), UNIX_TIME));
+
+        }
+
+
 
         if let Err(_err) = fs::create_dir_all(&grave.parent().unwrap()) {
             bail!(
